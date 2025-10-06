@@ -1,0 +1,1155 @@
+type User @aws_iam @aws_cognito_user_pools {
+  cognitoId: String!
+  email: String!
+  name: String!
+  role: UserRole
+  status: UserStatus
+  paymentStatus: UserPaymentStatus
+  paymentAmount: Int
+  transactionId: String
+  fcmToken: String
+  enrollmentDate: AWSDateTime
+  lastLoginAt: AWSDateTime
+  enrollments(filter: ModelEnrollmentFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelEnrollmentConnection
+  submissions(filter: ModelSubmissionFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSubmissionConnection
+  sessions(filter: ModelSessionFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSessionConnection
+  sessionParticipants(filter: ModelSessionParticipantFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSessionParticipantConnection
+  notifications(filter: ModelNotificationFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelNotificationConnection
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type Program @aws_iam @aws_cognito_user_pools {
+  title: String!
+  description: String!
+  duration: Int!
+  price: Int!
+  isActive: Boolean
+  modules(filter: ModelModuleFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelModuleConnection
+  enrollments(filter: ModelEnrollmentFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelEnrollmentConnection
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Module @aws_iam @aws_cognito_user_pools {
+  title: String!
+  description: String!
+  order: Int!
+  programId: ID!
+  program: Program
+  assignments(filter: ModelAssignmentFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelAssignmentConnection
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Assignment @aws_iam @aws_cognito_user_pools {
+  title: String!
+  description: String!
+  type: AssignmentType
+  maxScore: Int!
+  dueDate: AWSDateTime!
+  moduleId: ID!
+  module: Module
+  submissions(filter: ModelSubmissionFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSubmissionConnection
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type Enrollment @aws_iam @aws_cognito_user_pools {
+  userId: ID!
+  programId: ID!
+  user: User
+  program: Program
+  enrollmentDate: AWSDateTime!
+  status: EnrollmentStatus
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type Submission @aws_iam @aws_cognito_user_pools {
+  userId: ID!
+  assignmentId: ID!
+  user: User
+  assignment: Assignment
+  content: String
+  score: Int
+  feedback: String
+  submittedAt: AWSDateTime!
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type Session @aws_iam @aws_cognito_user_pools {
+  title: String!
+  description: String
+  startTime: AWSDateTime!
+  endTime: AWSDateTime!
+  mentorId: ID!
+  mentor: User
+  participants(filter: ModelSessionParticipantFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelSessionParticipantConnection
+  recordings(filter: ModelRecordingFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelRecordingConnection
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+}
+
+type SessionParticipant @aws_iam @aws_cognito_user_pools {
+  sessionId: ID!
+  userId: ID!
+  session: Session
+  user: User
+  joinedAt: AWSDateTime!
+  id: ID!
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+type Recording @aws_iam @aws_cognito_user_pools {
+  sessionId: ID!
+  session: Session
+  url: String!
+  duration: Int!
+  createdAt: AWSDateTime!
+  id: ID!
+  updatedAt: AWSDateTime!
+}
+
+type Notification @aws_iam @aws_cognito_user_pools {
+  userId: ID!
+  user: User
+  title: String!
+  body: String!
+  type: NotificationType
+  data: AWSJSON
+  read: Boolean
+  createdAt: AWSDateTime!
+  id: ID!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+enum UserRole {
+  STUDENT
+  MENTOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum UserPaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum AssignmentType {
+  QUIZ
+  PROJECT
+  ESSAY
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+enum NotificationType {
+  ASSIGNMENT
+  SESSION
+  PAYMENT
+  SYSTEM
+}
+
+input AmplifyAIConversationTurnErrorInput {
+  errorType: String!
+  message: String!
+}
+
+input ModelStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelBooleanInput {
+  ne: Boolean
+  eq: Boolean
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelSubscriptionStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  in: [String]
+  notIn: [String]
+}
+
+input ModelSubscriptionIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  in: [Int]
+  notIn: [Int]
+}
+
+input ModelSubscriptionFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  in: [Float]
+  notIn: [Float]
+}
+
+input ModelSubscriptionBooleanInput {
+  ne: Boolean
+  eq: Boolean
+}
+
+input ModelSubscriptionIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  in: [ID]
+  notIn: [ID]
+}
+
+enum ModelAttributeTypes {
+  binary
+  binarySet
+  bool
+  list
+  map
+  number
+  numberSet
+  string
+  stringSet
+  _null
+}
+
+input ModelSizeInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+type ModelUserConnection @aws_iam @aws_cognito_user_pools {
+  items: [User]!
+  nextToken: String
+}
+
+input ModelUserRoleInput {
+  eq: UserRole
+  ne: UserRole
+}
+
+input ModelUserStatusInput {
+  eq: UserStatus
+  ne: UserStatus
+}
+
+input ModelUserPaymentStatusInput {
+  eq: UserPaymentStatus
+  ne: UserPaymentStatus
+}
+
+input ModelUserFilterInput {
+  cognitoId: ModelStringInput
+  email: ModelStringInput
+  name: ModelStringInput
+  role: ModelUserRoleInput
+  status: ModelUserStatusInput
+  paymentStatus: ModelUserPaymentStatusInput
+  paymentAmount: ModelIntInput
+  transactionId: ModelStringInput
+  fcmToken: ModelStringInput
+  enrollmentDate: ModelStringInput
+  lastLoginAt: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelUserFilterInput]
+  or: [ModelUserFilterInput]
+  not: ModelUserFilterInput
+  owner: ModelStringInput
+}
+
+type Query {
+  getUser(id: ID!): User @aws_iam @aws_cognito_user_pools
+  listUsers(filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection @aws_iam @aws_cognito_user_pools
+  getProgram(id: ID!): Program @aws_iam @aws_cognito_user_pools
+  listPrograms(filter: ModelProgramFilterInput, limit: Int, nextToken: String): ModelProgramConnection @aws_iam @aws_cognito_user_pools
+  getModule(id: ID!): Module @aws_iam @aws_cognito_user_pools
+  listModules(filter: ModelModuleFilterInput, limit: Int, nextToken: String): ModelModuleConnection @aws_iam @aws_cognito_user_pools
+  getAssignment(id: ID!): Assignment @aws_iam @aws_cognito_user_pools
+  listAssignments(filter: ModelAssignmentFilterInput, limit: Int, nextToken: String): ModelAssignmentConnection @aws_iam @aws_cognito_user_pools
+  getEnrollment(id: ID!): Enrollment @aws_iam @aws_cognito_user_pools
+  listEnrollments(filter: ModelEnrollmentFilterInput, limit: Int, nextToken: String): ModelEnrollmentConnection @aws_iam @aws_cognito_user_pools
+  getSubmission(id: ID!): Submission @aws_iam @aws_cognito_user_pools
+  listSubmissions(filter: ModelSubmissionFilterInput, limit: Int, nextToken: String): ModelSubmissionConnection @aws_iam @aws_cognito_user_pools
+  getSession(id: ID!): Session @aws_iam @aws_cognito_user_pools
+  listSessions(filter: ModelSessionFilterInput, limit: Int, nextToken: String): ModelSessionConnection @aws_iam @aws_cognito_user_pools
+  getSessionParticipant(id: ID!): SessionParticipant @aws_iam @aws_cognito_user_pools
+  listSessionParticipants(filter: ModelSessionParticipantFilterInput, limit: Int, nextToken: String): ModelSessionParticipantConnection @aws_iam @aws_cognito_user_pools
+  getRecording(id: ID!): Recording @aws_iam @aws_cognito_user_pools
+  listRecordings(filter: ModelRecordingFilterInput, limit: Int, nextToken: String): ModelRecordingConnection @aws_iam @aws_cognito_user_pools
+  getNotification(id: ID!): Notification @aws_iam @aws_cognito_user_pools
+  listNotifications(filter: ModelNotificationFilterInput, limit: Int, nextToken: String): ModelNotificationConnection @aws_iam @aws_cognito_user_pools
+}
+
+input ModelUserConditionInput {
+  cognitoId: ModelStringInput
+  email: ModelStringInput
+  name: ModelStringInput
+  role: ModelUserRoleInput
+  status: ModelUserStatusInput
+  paymentStatus: ModelUserPaymentStatusInput
+  paymentAmount: ModelIntInput
+  transactionId: ModelStringInput
+  fcmToken: ModelStringInput
+  enrollmentDate: ModelStringInput
+  lastLoginAt: ModelStringInput
+  and: [ModelUserConditionInput]
+  or: [ModelUserConditionInput]
+  not: ModelUserConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateUserInput {
+  cognitoId: String!
+  email: String!
+  name: String!
+  role: UserRole
+  status: UserStatus
+  paymentStatus: UserPaymentStatus
+  paymentAmount: Int
+  transactionId: String
+  fcmToken: String
+  enrollmentDate: AWSDateTime
+  lastLoginAt: AWSDateTime
+  id: ID
+}
+
+input UpdateUserInput {
+  cognitoId: String
+  email: String
+  name: String
+  role: UserRole
+  status: UserStatus
+  paymentStatus: UserPaymentStatus
+  paymentAmount: Int
+  transactionId: String
+  fcmToken: String
+  enrollmentDate: AWSDateTime
+  lastLoginAt: AWSDateTime
+  id: ID!
+}
+
+input DeleteUserInput {
+  id: ID!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!, condition: ModelUserConditionInput): User @aws_iam @aws_cognito_user_pools
+  updateUser(input: UpdateUserInput!, condition: ModelUserConditionInput): User @aws_iam @aws_cognito_user_pools
+  deleteUser(input: DeleteUserInput!, condition: ModelUserConditionInput): User @aws_iam @aws_cognito_user_pools
+  createProgram(input: CreateProgramInput!, condition: ModelProgramConditionInput): Program @aws_iam @aws_cognito_user_pools
+  updateProgram(input: UpdateProgramInput!, condition: ModelProgramConditionInput): Program @aws_iam @aws_cognito_user_pools
+  deleteProgram(input: DeleteProgramInput!, condition: ModelProgramConditionInput): Program @aws_iam @aws_cognito_user_pools
+  createModule(input: CreateModuleInput!, condition: ModelModuleConditionInput): Module @aws_iam @aws_cognito_user_pools
+  updateModule(input: UpdateModuleInput!, condition: ModelModuleConditionInput): Module @aws_iam @aws_cognito_user_pools
+  deleteModule(input: DeleteModuleInput!, condition: ModelModuleConditionInput): Module @aws_iam @aws_cognito_user_pools
+  createAssignment(input: CreateAssignmentInput!, condition: ModelAssignmentConditionInput): Assignment @aws_iam @aws_cognito_user_pools
+  updateAssignment(input: UpdateAssignmentInput!, condition: ModelAssignmentConditionInput): Assignment @aws_iam @aws_cognito_user_pools
+  deleteAssignment(input: DeleteAssignmentInput!, condition: ModelAssignmentConditionInput): Assignment @aws_iam @aws_cognito_user_pools
+  createEnrollment(input: CreateEnrollmentInput!, condition: ModelEnrollmentConditionInput): Enrollment @aws_iam @aws_cognito_user_pools
+  updateEnrollment(input: UpdateEnrollmentInput!, condition: ModelEnrollmentConditionInput): Enrollment @aws_iam @aws_cognito_user_pools
+  deleteEnrollment(input: DeleteEnrollmentInput!, condition: ModelEnrollmentConditionInput): Enrollment @aws_iam @aws_cognito_user_pools
+  createSubmission(input: CreateSubmissionInput!, condition: ModelSubmissionConditionInput): Submission @aws_iam @aws_cognito_user_pools
+  updateSubmission(input: UpdateSubmissionInput!, condition: ModelSubmissionConditionInput): Submission @aws_iam @aws_cognito_user_pools
+  deleteSubmission(input: DeleteSubmissionInput!, condition: ModelSubmissionConditionInput): Submission @aws_iam @aws_cognito_user_pools
+  createSession(input: CreateSessionInput!, condition: ModelSessionConditionInput): Session @aws_iam @aws_cognito_user_pools
+  updateSession(input: UpdateSessionInput!, condition: ModelSessionConditionInput): Session @aws_iam @aws_cognito_user_pools
+  deleteSession(input: DeleteSessionInput!, condition: ModelSessionConditionInput): Session @aws_iam @aws_cognito_user_pools
+  createSessionParticipant(input: CreateSessionParticipantInput!, condition: ModelSessionParticipantConditionInput): SessionParticipant @aws_iam @aws_cognito_user_pools
+  updateSessionParticipant(input: UpdateSessionParticipantInput!, condition: ModelSessionParticipantConditionInput): SessionParticipant @aws_iam @aws_cognito_user_pools
+  deleteSessionParticipant(input: DeleteSessionParticipantInput!, condition: ModelSessionParticipantConditionInput): SessionParticipant @aws_iam @aws_cognito_user_pools
+  createRecording(input: CreateRecordingInput!, condition: ModelRecordingConditionInput): Recording @aws_iam @aws_cognito_user_pools
+  updateRecording(input: UpdateRecordingInput!, condition: ModelRecordingConditionInput): Recording @aws_iam @aws_cognito_user_pools
+  deleteRecording(input: DeleteRecordingInput!, condition: ModelRecordingConditionInput): Recording @aws_iam @aws_cognito_user_pools
+  createNotification(input: CreateNotificationInput!, condition: ModelNotificationConditionInput): Notification @aws_iam @aws_cognito_user_pools
+  updateNotification(input: UpdateNotificationInput!, condition: ModelNotificationConditionInput): Notification @aws_iam @aws_cognito_user_pools
+  deleteNotification(input: DeleteNotificationInput!, condition: ModelNotificationConditionInput): Notification @aws_iam @aws_cognito_user_pools
+}
+
+input ModelSubscriptionUserFilterInput {
+  cognitoId: ModelSubscriptionStringInput
+  email: ModelSubscriptionStringInput
+  name: ModelSubscriptionStringInput
+  role: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  paymentStatus: ModelSubscriptionStringInput
+  paymentAmount: ModelSubscriptionIntInput
+  transactionId: ModelSubscriptionStringInput
+  fcmToken: ModelSubscriptionStringInput
+  enrollmentDate: ModelSubscriptionStringInput
+  lastLoginAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionUserFilterInput]
+  or: [ModelSubscriptionUserFilterInput]
+  owner: ModelStringInput
+}
+
+type Subscription {
+  onCreateUser(filter: ModelSubscriptionUserFilterInput, owner: String): User @aws_subscribe(mutations: ["createUser"]) @aws_iam @aws_cognito_user_pools
+  onUpdateUser(filter: ModelSubscriptionUserFilterInput, owner: String): User @aws_subscribe(mutations: ["updateUser"]) @aws_iam @aws_cognito_user_pools
+  onDeleteUser(filter: ModelSubscriptionUserFilterInput, owner: String): User @aws_subscribe(mutations: ["deleteUser"]) @aws_iam @aws_cognito_user_pools
+  onCreateProgram(filter: ModelSubscriptionProgramFilterInput): Program @aws_subscribe(mutations: ["createProgram"]) @aws_iam @aws_cognito_user_pools
+  onUpdateProgram(filter: ModelSubscriptionProgramFilterInput): Program @aws_subscribe(mutations: ["updateProgram"]) @aws_iam @aws_cognito_user_pools
+  onDeleteProgram(filter: ModelSubscriptionProgramFilterInput): Program @aws_subscribe(mutations: ["deleteProgram"]) @aws_iam @aws_cognito_user_pools
+  onCreateModule(filter: ModelSubscriptionModuleFilterInput): Module @aws_subscribe(mutations: ["createModule"]) @aws_iam @aws_cognito_user_pools
+  onUpdateModule(filter: ModelSubscriptionModuleFilterInput): Module @aws_subscribe(mutations: ["updateModule"]) @aws_iam @aws_cognito_user_pools
+  onDeleteModule(filter: ModelSubscriptionModuleFilterInput): Module @aws_subscribe(mutations: ["deleteModule"]) @aws_iam @aws_cognito_user_pools
+  onCreateAssignment(filter: ModelSubscriptionAssignmentFilterInput): Assignment @aws_subscribe(mutations: ["createAssignment"]) @aws_iam @aws_cognito_user_pools
+  onUpdateAssignment(filter: ModelSubscriptionAssignmentFilterInput): Assignment @aws_subscribe(mutations: ["updateAssignment"]) @aws_iam @aws_cognito_user_pools
+  onDeleteAssignment(filter: ModelSubscriptionAssignmentFilterInput): Assignment @aws_subscribe(mutations: ["deleteAssignment"]) @aws_iam @aws_cognito_user_pools
+  onCreateEnrollment(filter: ModelSubscriptionEnrollmentFilterInput, owner: String): Enrollment @aws_subscribe(mutations: ["createEnrollment"]) @aws_iam @aws_cognito_user_pools
+  onUpdateEnrollment(filter: ModelSubscriptionEnrollmentFilterInput, owner: String): Enrollment @aws_subscribe(mutations: ["updateEnrollment"]) @aws_iam @aws_cognito_user_pools
+  onDeleteEnrollment(filter: ModelSubscriptionEnrollmentFilterInput, owner: String): Enrollment @aws_subscribe(mutations: ["deleteEnrollment"]) @aws_iam @aws_cognito_user_pools
+  onCreateSubmission(filter: ModelSubscriptionSubmissionFilterInput, owner: String): Submission @aws_subscribe(mutations: ["createSubmission"]) @aws_iam @aws_cognito_user_pools
+  onUpdateSubmission(filter: ModelSubscriptionSubmissionFilterInput, owner: String): Submission @aws_subscribe(mutations: ["updateSubmission"]) @aws_iam @aws_cognito_user_pools
+  onDeleteSubmission(filter: ModelSubscriptionSubmissionFilterInput, owner: String): Submission @aws_subscribe(mutations: ["deleteSubmission"]) @aws_iam @aws_cognito_user_pools
+  onCreateSession(filter: ModelSubscriptionSessionFilterInput): Session @aws_subscribe(mutations: ["createSession"]) @aws_iam @aws_cognito_user_pools
+  onUpdateSession(filter: ModelSubscriptionSessionFilterInput): Session @aws_subscribe(mutations: ["updateSession"]) @aws_iam @aws_cognito_user_pools
+  onDeleteSession(filter: ModelSubscriptionSessionFilterInput): Session @aws_subscribe(mutations: ["deleteSession"]) @aws_iam @aws_cognito_user_pools
+  onCreateSessionParticipant(filter: ModelSubscriptionSessionParticipantFilterInput, owner: String): SessionParticipant @aws_subscribe(mutations: ["createSessionParticipant"]) @aws_iam @aws_cognito_user_pools
+  onUpdateSessionParticipant(filter: ModelSubscriptionSessionParticipantFilterInput, owner: String): SessionParticipant @aws_subscribe(mutations: ["updateSessionParticipant"]) @aws_iam @aws_cognito_user_pools
+  onDeleteSessionParticipant(filter: ModelSubscriptionSessionParticipantFilterInput, owner: String): SessionParticipant @aws_subscribe(mutations: ["deleteSessionParticipant"]) @aws_iam @aws_cognito_user_pools
+  onCreateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["createRecording"]) @aws_iam @aws_cognito_user_pools
+  onUpdateRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["updateRecording"]) @aws_iam @aws_cognito_user_pools
+  onDeleteRecording(filter: ModelSubscriptionRecordingFilterInput): Recording @aws_subscribe(mutations: ["deleteRecording"]) @aws_iam @aws_cognito_user_pools
+  onCreateNotification(filter: ModelSubscriptionNotificationFilterInput, owner: String): Notification @aws_subscribe(mutations: ["createNotification"]) @aws_iam @aws_cognito_user_pools
+  onUpdateNotification(filter: ModelSubscriptionNotificationFilterInput, owner: String): Notification @aws_subscribe(mutations: ["updateNotification"]) @aws_iam @aws_cognito_user_pools
+  onDeleteNotification(filter: ModelSubscriptionNotificationFilterInput, owner: String): Notification @aws_subscribe(mutations: ["deleteNotification"]) @aws_iam @aws_cognito_user_pools
+}
+
+type ModelProgramConnection @aws_iam @aws_cognito_user_pools {
+  items: [Program]!
+  nextToken: String
+}
+
+input ModelProgramFilterInput {
+  title: ModelStringInput
+  description: ModelStringInput
+  duration: ModelIntInput
+  price: ModelIntInput
+  isActive: ModelBooleanInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelProgramFilterInput]
+  or: [ModelProgramFilterInput]
+  not: ModelProgramFilterInput
+}
+
+input ModelProgramConditionInput {
+  title: ModelStringInput
+  description: ModelStringInput
+  duration: ModelIntInput
+  price: ModelIntInput
+  isActive: ModelBooleanInput
+  and: [ModelProgramConditionInput]
+  or: [ModelProgramConditionInput]
+  not: ModelProgramConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateProgramInput {
+  title: String!
+  description: String!
+  duration: Int!
+  price: Int!
+  isActive: Boolean
+  id: ID
+}
+
+input UpdateProgramInput {
+  title: String
+  description: String
+  duration: Int
+  price: Int
+  isActive: Boolean
+  id: ID!
+}
+
+input DeleteProgramInput {
+  id: ID!
+}
+
+input ModelSubscriptionProgramFilterInput {
+  title: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  duration: ModelSubscriptionIntInput
+  price: ModelSubscriptionIntInput
+  isActive: ModelSubscriptionBooleanInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionProgramFilterInput]
+  or: [ModelSubscriptionProgramFilterInput]
+}
+
+type ModelModuleConnection @aws_iam @aws_cognito_user_pools {
+  items: [Module]!
+  nextToken: String
+}
+
+input ModelModuleFilterInput {
+  title: ModelStringInput
+  description: ModelStringInput
+  order: ModelIntInput
+  programId: ModelIDInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelModuleFilterInput]
+  or: [ModelModuleFilterInput]
+  not: ModelModuleFilterInput
+}
+
+input ModelModuleConditionInput {
+  title: ModelStringInput
+  description: ModelStringInput
+  order: ModelIntInput
+  programId: ModelIDInput
+  and: [ModelModuleConditionInput]
+  or: [ModelModuleConditionInput]
+  not: ModelModuleConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateModuleInput {
+  title: String!
+  description: String!
+  order: Int!
+  programId: ID!
+  id: ID
+}
+
+input UpdateModuleInput {
+  title: String
+  description: String
+  order: Int
+  programId: ID
+  id: ID!
+}
+
+input DeleteModuleInput {
+  id: ID!
+}
+
+input ModelSubscriptionModuleFilterInput {
+  title: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  order: ModelSubscriptionIntInput
+  programId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionModuleFilterInput]
+  or: [ModelSubscriptionModuleFilterInput]
+}
+
+type ModelAssignmentConnection @aws_iam @aws_cognito_user_pools {
+  items: [Assignment]!
+  nextToken: String
+}
+
+input ModelAssignmentTypeInput {
+  eq: AssignmentType
+  ne: AssignmentType
+}
+
+input ModelAssignmentFilterInput {
+  title: ModelStringInput
+  description: ModelStringInput
+  type: ModelAssignmentTypeInput
+  maxScore: ModelIntInput
+  dueDate: ModelStringInput
+  moduleId: ModelIDInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelAssignmentFilterInput]
+  or: [ModelAssignmentFilterInput]
+  not: ModelAssignmentFilterInput
+}
+
+input ModelAssignmentConditionInput {
+  title: ModelStringInput
+  description: ModelStringInput
+  type: ModelAssignmentTypeInput
+  maxScore: ModelIntInput
+  dueDate: ModelStringInput
+  moduleId: ModelIDInput
+  and: [ModelAssignmentConditionInput]
+  or: [ModelAssignmentConditionInput]
+  not: ModelAssignmentConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateAssignmentInput {
+  title: String!
+  description: String!
+  type: AssignmentType
+  maxScore: Int!
+  dueDate: AWSDateTime!
+  moduleId: ID!
+  id: ID
+}
+
+input UpdateAssignmentInput {
+  title: String
+  description: String
+  type: AssignmentType
+  maxScore: Int
+  dueDate: AWSDateTime
+  moduleId: ID
+  id: ID!
+}
+
+input DeleteAssignmentInput {
+  id: ID!
+}
+
+input ModelSubscriptionAssignmentFilterInput {
+  title: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  type: ModelSubscriptionStringInput
+  maxScore: ModelSubscriptionIntInput
+  dueDate: ModelSubscriptionStringInput
+  moduleId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionAssignmentFilterInput]
+  or: [ModelSubscriptionAssignmentFilterInput]
+}
+
+type ModelEnrollmentConnection @aws_iam @aws_cognito_user_pools {
+  items: [Enrollment]!
+  nextToken: String
+}
+
+input ModelEnrollmentStatusInput {
+  eq: EnrollmentStatus
+  ne: EnrollmentStatus
+}
+
+input ModelEnrollmentFilterInput {
+  userId: ModelIDInput
+  programId: ModelIDInput
+  enrollmentDate: ModelStringInput
+  status: ModelEnrollmentStatusInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelEnrollmentFilterInput]
+  or: [ModelEnrollmentFilterInput]
+  not: ModelEnrollmentFilterInput
+  owner: ModelStringInput
+}
+
+input ModelEnrollmentConditionInput {
+  userId: ModelIDInput
+  programId: ModelIDInput
+  enrollmentDate: ModelStringInput
+  status: ModelEnrollmentStatusInput
+  and: [ModelEnrollmentConditionInput]
+  or: [ModelEnrollmentConditionInput]
+  not: ModelEnrollmentConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateEnrollmentInput {
+  userId: ID!
+  programId: ID!
+  enrollmentDate: AWSDateTime!
+  status: EnrollmentStatus
+  id: ID
+}
+
+input UpdateEnrollmentInput {
+  userId: ID
+  programId: ID
+  enrollmentDate: AWSDateTime
+  status: EnrollmentStatus
+  id: ID!
+}
+
+input DeleteEnrollmentInput {
+  id: ID!
+}
+
+input ModelSubscriptionEnrollmentFilterInput {
+  userId: ModelSubscriptionIDInput
+  programId: ModelSubscriptionIDInput
+  enrollmentDate: ModelSubscriptionStringInput
+  status: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionEnrollmentFilterInput]
+  or: [ModelSubscriptionEnrollmentFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelSubmissionConnection @aws_iam @aws_cognito_user_pools {
+  items: [Submission]!
+  nextToken: String
+}
+
+input ModelSubmissionFilterInput {
+  userId: ModelIDInput
+  assignmentId: ModelIDInput
+  content: ModelStringInput
+  score: ModelIntInput
+  feedback: ModelStringInput
+  submittedAt: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelSubmissionFilterInput]
+  or: [ModelSubmissionFilterInput]
+  not: ModelSubmissionFilterInput
+  owner: ModelStringInput
+}
+
+input ModelSubmissionConditionInput {
+  userId: ModelIDInput
+  assignmentId: ModelIDInput
+  content: ModelStringInput
+  score: ModelIntInput
+  feedback: ModelStringInput
+  submittedAt: ModelStringInput
+  and: [ModelSubmissionConditionInput]
+  or: [ModelSubmissionConditionInput]
+  not: ModelSubmissionConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateSubmissionInput {
+  userId: ID!
+  assignmentId: ID!
+  content: String
+  score: Int
+  feedback: String
+  submittedAt: AWSDateTime!
+  id: ID
+}
+
+input UpdateSubmissionInput {
+  userId: ID
+  assignmentId: ID
+  content: String
+  score: Int
+  feedback: String
+  submittedAt: AWSDateTime
+  id: ID!
+}
+
+input DeleteSubmissionInput {
+  id: ID!
+}
+
+input ModelSubscriptionSubmissionFilterInput {
+  userId: ModelSubscriptionIDInput
+  assignmentId: ModelSubscriptionIDInput
+  content: ModelSubscriptionStringInput
+  score: ModelSubscriptionIntInput
+  feedback: ModelSubscriptionStringInput
+  submittedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionSubmissionFilterInput]
+  or: [ModelSubscriptionSubmissionFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelSessionConnection @aws_iam @aws_cognito_user_pools {
+  items: [Session]!
+  nextToken: String
+}
+
+input ModelSessionFilterInput {
+  title: ModelStringInput
+  description: ModelStringInput
+  startTime: ModelStringInput
+  endTime: ModelStringInput
+  mentorId: ModelIDInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelSessionFilterInput]
+  or: [ModelSessionFilterInput]
+  not: ModelSessionFilterInput
+}
+
+input ModelSessionConditionInput {
+  title: ModelStringInput
+  description: ModelStringInput
+  startTime: ModelStringInput
+  endTime: ModelStringInput
+  mentorId: ModelIDInput
+  and: [ModelSessionConditionInput]
+  or: [ModelSessionConditionInput]
+  not: ModelSessionConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+}
+
+input CreateSessionInput {
+  title: String!
+  description: String
+  startTime: AWSDateTime!
+  endTime: AWSDateTime!
+  mentorId: ID!
+  id: ID
+}
+
+input UpdateSessionInput {
+  title: String
+  description: String
+  startTime: AWSDateTime
+  endTime: AWSDateTime
+  mentorId: ID
+  id: ID!
+}
+
+input DeleteSessionInput {
+  id: ID!
+}
+
+input ModelSubscriptionSessionFilterInput {
+  title: ModelSubscriptionStringInput
+  description: ModelSubscriptionStringInput
+  startTime: ModelSubscriptionStringInput
+  endTime: ModelSubscriptionStringInput
+  mentorId: ModelSubscriptionIDInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionSessionFilterInput]
+  or: [ModelSubscriptionSessionFilterInput]
+}
+
+type ModelSessionParticipantConnection @aws_iam @aws_cognito_user_pools {
+  items: [SessionParticipant]!
+  nextToken: String
+}
+
+input ModelSessionParticipantFilterInput {
+  sessionId: ModelIDInput
+  userId: ModelIDInput
+  joinedAt: ModelStringInput
+  id: ModelIDInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelSessionParticipantFilterInput]
+  or: [ModelSessionParticipantFilterInput]
+  not: ModelSessionParticipantFilterInput
+  owner: ModelStringInput
+}
+
+input ModelSessionParticipantConditionInput {
+  sessionId: ModelIDInput
+  userId: ModelIDInput
+  joinedAt: ModelStringInput
+  and: [ModelSessionParticipantConditionInput]
+  or: [ModelSessionParticipantConditionInput]
+  not: ModelSessionParticipantConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateSessionParticipantInput {
+  sessionId: ID!
+  userId: ID!
+  joinedAt: AWSDateTime!
+  id: ID
+}
+
+input UpdateSessionParticipantInput {
+  sessionId: ID
+  userId: ID
+  joinedAt: AWSDateTime
+  id: ID!
+}
+
+input DeleteSessionParticipantInput {
+  id: ID!
+}
+
+input ModelSubscriptionSessionParticipantFilterInput {
+  sessionId: ModelSubscriptionIDInput
+  userId: ModelSubscriptionIDInput
+  joinedAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionSessionParticipantFilterInput]
+  or: [ModelSubscriptionSessionParticipantFilterInput]
+  owner: ModelStringInput
+}
+
+type ModelRecordingConnection @aws_iam @aws_cognito_user_pools {
+  items: [Recording]!
+  nextToken: String
+}
+
+input ModelRecordingFilterInput {
+  sessionId: ModelIDInput
+  url: ModelStringInput
+  duration: ModelIntInput
+  createdAt: ModelStringInput
+  id: ModelIDInput
+  updatedAt: ModelStringInput
+  and: [ModelRecordingFilterInput]
+  or: [ModelRecordingFilterInput]
+  not: ModelRecordingFilterInput
+}
+
+input ModelRecordingConditionInput {
+  sessionId: ModelIDInput
+  url: ModelStringInput
+  duration: ModelIntInput
+  createdAt: ModelStringInput
+  and: [ModelRecordingConditionInput]
+  or: [ModelRecordingConditionInput]
+  not: ModelRecordingConditionInput
+  updatedAt: ModelStringInput
+}
+
+input CreateRecordingInput {
+  sessionId: ID!
+  url: String!
+  duration: Int!
+  createdAt: AWSDateTime
+  id: ID
+}
+
+input UpdateRecordingInput {
+  sessionId: ID
+  url: String
+  duration: Int
+  createdAt: AWSDateTime
+  id: ID!
+}
+
+input DeleteRecordingInput {
+  id: ID!
+}
+
+input ModelSubscriptionRecordingFilterInput {
+  sessionId: ModelSubscriptionIDInput
+  url: ModelSubscriptionStringInput
+  duration: ModelSubscriptionIntInput
+  createdAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionRecordingFilterInput]
+  or: [ModelSubscriptionRecordingFilterInput]
+}
+
+type ModelNotificationConnection @aws_iam @aws_cognito_user_pools {
+  items: [Notification]!
+  nextToken: String
+}
+
+input ModelNotificationTypeInput {
+  eq: NotificationType
+  ne: NotificationType
+}
+
+input ModelNotificationFilterInput {
+  userId: ModelIDInput
+  title: ModelStringInput
+  body: ModelStringInput
+  type: ModelNotificationTypeInput
+  data: ModelStringInput
+  read: ModelBooleanInput
+  createdAt: ModelStringInput
+  id: ModelIDInput
+  updatedAt: ModelStringInput
+  and: [ModelNotificationFilterInput]
+  or: [ModelNotificationFilterInput]
+  not: ModelNotificationFilterInput
+  owner: ModelStringInput
+}
+
+input ModelNotificationConditionInput {
+  userId: ModelIDInput
+  title: ModelStringInput
+  body: ModelStringInput
+  type: ModelNotificationTypeInput
+  data: ModelStringInput
+  read: ModelBooleanInput
+  createdAt: ModelStringInput
+  and: [ModelNotificationConditionInput]
+  or: [ModelNotificationConditionInput]
+  not: ModelNotificationConditionInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateNotificationInput {
+  userId: ID!
+  title: String!
+  body: String!
+  type: NotificationType
+  data: AWSJSON
+  read: Boolean
+  createdAt: AWSDateTime
+  id: ID
+}
+
+input UpdateNotificationInput {
+  userId: ID
+  title: String
+  body: String
+  type: NotificationType
+  data: AWSJSON
+  read: Boolean
+  createdAt: AWSDateTime
+  id: ID!
+}
+
+input DeleteNotificationInput {
+  id: ID!
+}
+
+input ModelSubscriptionNotificationFilterInput {
+  userId: ModelSubscriptionIDInput
+  title: ModelSubscriptionStringInput
+  body: ModelSubscriptionStringInput
+  type: ModelSubscriptionStringInput
+  data: ModelSubscriptionStringInput
+  read: ModelSubscriptionBooleanInput
+  createdAt: ModelSubscriptionStringInput
+  id: ModelSubscriptionIDInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionNotificationFilterInput]
+  or: [ModelSubscriptionNotificationFilterInput]
+  owner: ModelStringInput
+}

@@ -1,0 +1,168 @@
+type User @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: private, operations: [read]}])
+{
+  cognitoId: String!
+  email: String!
+  name: String!
+  role: UserRole
+  status: UserStatus
+  paymentStatus: UserPaymentStatus
+  paymentAmount: Int @default(value: "0")
+  transactionId: String
+  fcmToken: String
+  enrollmentDate: AWSDateTime
+  lastLoginAt: AWSDateTime
+  enrollments: [Enrollment] @hasMany(references: ["userId"])
+  submissions: [Submission] @hasMany(references: ["userId"])
+  sessions: [Session] @hasMany(references: ["mentorId"])
+  sessionParticipants: [SessionParticipant] @hasMany(references: ["userId"])
+  notifications: [Notification] @hasMany(references: ["userId"])
+}
+
+type Program @model @auth(rules: [{allow: private, operations: [read]},
+  {allow: groups, operations: [create, update, delete], groups: ["admin"]}])
+{
+  title: String!
+  description: String!
+  duration: Int!
+  price: Int!
+  isActive: Boolean @default(value: "true")
+  modules: [Module] @hasMany(references: ["programId"])
+  enrollments: [Enrollment] @hasMany(references: ["programId"])
+}
+
+type Module @model @auth(rules: [{allow: private, operations: [read]},
+  {allow: groups, operations: [create, update, delete], groups: ["admin"]}])
+{
+  title: String!
+  description: String!
+  order: Int!
+  programId: ID!
+  program: Program @belongsTo(references: ["programId"])
+  assignments: [Assignment] @hasMany(references: ["moduleId"])
+}
+
+type Assignment @model @auth(rules: [{allow: private, operations: [read]},
+  {allow: groups, operations: [create, update, delete], groups: ["admin"]}])
+{
+  title: String!
+  description: String!
+  type: AssignmentType
+  maxScore: Int!
+  dueDate: AWSDateTime!
+  moduleId: ID!
+  module: Module @belongsTo(references: ["moduleId"])
+  submissions: [Submission] @hasMany(references: ["assignmentId"])
+}
+
+type Enrollment @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: groups, operations: [read, update], groups: ["admin"]}])
+{
+  userId: ID!
+  programId: ID!
+  user: User @belongsTo(references: ["userId"])
+  program: Program @belongsTo(references: ["programId"])
+  enrollmentDate: AWSDateTime!
+  status: EnrollmentStatus
+}
+
+type Submission @model @auth(rules: [{allow: owner, operations: [create, read, update], ownerField: "owner"},
+  {allow: groups, operations: [read, update], groups: ["mentor"]},
+  {allow: groups, operations: [read, update, delete], groups: ["admin"]}])
+{
+  userId: ID!
+  assignmentId: ID!
+  user: User @belongsTo(references: ["userId"])
+  assignment: Assignment @belongsTo(references: ["assignmentId"])
+  content: String
+  score: Int
+  feedback: String
+  submittedAt: AWSDateTime!
+}
+
+type Session @model @auth(rules: [{allow: private, operations: [read]},
+  {allow: groups, operations: [create, update, delete], groups: ["mentor"]},
+  {allow: groups, operations: [create, update, delete], groups: ["admin"]}])
+{
+  title: String!
+  description: String
+  startTime: AWSDateTime!
+  endTime: AWSDateTime!
+  mentorId: ID!
+  mentor: User @belongsTo(references: ["mentorId"])
+  participants: [SessionParticipant] @hasMany(references: ["sessionId"])
+  recordings: [Recording] @hasMany(references: ["sessionId"])
+}
+
+type SessionParticipant @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: groups, operations: [read], groups: ["mentor"]},
+  {allow: groups, operations: [read, create, delete], groups: ["admin"]}])
+{
+  sessionId: ID!
+  userId: ID!
+  session: Session @belongsTo(references: ["sessionId"])
+  user: User @belongsTo(references: ["userId"])
+  joinedAt: AWSDateTime!
+}
+
+type Recording @model @auth(rules: [{allow: private, operations: [read]},
+  {allow: groups, operations: [create, update, delete], groups: ["mentor"]},
+  {allow: groups, operations: [create, update, delete], groups: ["admin"]}])
+{
+  sessionId: ID!
+  session: Session @belongsTo(references: ["sessionId"])
+  url: String!
+  duration: Int!
+  createdAt: AWSDateTime!
+}
+
+type Notification @model @auth(rules: [{allow: owner, ownerField: "owner"},
+  {allow: groups, operations: [create, read, update, delete], groups: ["admin"]}])
+{
+  userId: ID!
+  user: User @belongsTo(references: ["userId"])
+  title: String!
+  body: String!
+  type: NotificationType
+  data: AWSJSON
+  read: Boolean @default(value: "false")
+  createdAt: AWSDateTime!
+}
+
+enum UserRole {
+  STUDENT
+  MENTOR
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum UserPaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum AssignmentType {
+  QUIZ
+  PROJECT
+  ESSAY
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+enum NotificationType {
+  ASSIGNMENT
+  SESSION
+  PAYMENT
+  SYSTEM
+}
