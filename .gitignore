@@ -19,3 +19,11 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+# Environment files with secrets
+AWS_CREDENTIALS_CONFIGURED.md
+env.production
+kalpla-backend/env.development
+kalpla-backend/env.example
+kalpla-backend/env.production
+*.env
+.env*
